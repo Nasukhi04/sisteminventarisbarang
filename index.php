@@ -1,4 +1,14 @@
 <?php
+
+$keyword = "";
+
+// Cek apakah user sedang melakukan pencarian
+if (isset($_GET['keyword'])) {
+    $keyword = $_GET['keyword'];
+
+    // Testing sementara (boleh dihapus nanti)
+    echo "Keyword yang dicari: " . htmlspecialchars($keyword) . "<br><br>";
+}
 // Array multidimensi (5 data barang)
 $barang = [
     [
@@ -42,6 +52,14 @@ $barang = [
 <body>
 
 <h2>Daftar Inventaris Barang</h2>
+<form method="GET" action="">
+    <input type="text" name="keyword" placeholder="Ketik kata kunci..." 
+           value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+    <button type="submit">Cari</button>
+    <a href="index.php">Reset Pencarian</a>
+</form>
+
+<br>
 
 <table border="1" cellpadding="10">
     <tr>
@@ -51,24 +69,41 @@ $barang = [
         <th>Harga</th>
         <th>Status</th>
     </tr>
+    <?php
+$adaData = false;
+?>
+<?php foreach ($barang as $item) : ?>
 
-    <?php foreach ($barang as $item) : ?>
-        <tr>
-            <td><?= $item["nama_barang"]; ?></td>
-            <td><?= $item["kategori"]; ?></td>
-            <td><?= $item["stok"]; ?></td>
-            <td>Rp <?= number_format($item["harga"], 0, ',', '.'); ?></td>
-            <td>
-                <?php
-                if ($item["stok"] < 10) {
-                    echo "<span style='color:red;'>Stok Menipis - Segera Restock!</span>";
-                } else {
-                    echo "Stok Aman";
-                }
-                ?>
-            </td>
-        </tr>
-    <?php endforeach; ?>
+<?php
+    if ($keyword == "") {
+        $tampilkan = true;
+    } else {
+        $namaBarangLower = strtolower($item['nama_barang']);
+        $keywordLower    = strtolower($keyword);
+
+        $tampilkan = str_contains($namaBarangLower, $keywordLower);
+    }
+?>
+
+<?php if ($tampilkan) : ?>
+    <?php $adaData = true; ?>
+    <tr>
+        <td><?= $item["nama_barang"]; ?></td>
+        <td><?= $item["kategori"]; ?></td>
+        <td><?= $item["stok"]; ?></td>
+        <td>Rp <?= number_format($item["harga"], 0, ',', '.'); ?></td>
+    </tr>
+<?php endif; ?>
+
+<?php endforeach; ?>
+
+<?php if ($keyword != "" && !$adaData) : ?>
+    <tr>
+        <td colspan="4" style="text-align:center; color:red;">
+            Data tidak ditemukan.
+        </td>
+    </tr>
+<?php endif; ?>
 
 </table>
 
