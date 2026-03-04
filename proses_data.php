@@ -1,4 +1,5 @@
 <?php
+require 'koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
@@ -7,36 +8,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stok        = $_POST['stok'];
     $harga       = $_POST['harga'];
 
+    // Validasi sederhana
     if (empty($nama_barang) || empty($kategori) || empty($stok) || empty($harga)) {
-
-        echo "<h3 style='color:red;'>Error: Semua kolom wajib diisi!</h3>";
-        echo "<a href='tambah_data.php'>Kembali ke Form</a>";
-
-    } else {
-
-        echo "<h2>Data Berhasil Disimpan</h2>";
-
-        echo "<table border='1' cellpadding='10'>";
-        echo "<tr>
-                <th>Nama Barang</th>
-                <th>Kategori</th>
-                <th>Stok</th>
-                <th>Harga</th>
-              </tr>";
-
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($nama_barang) . "</td>";
-        echo "<td>" . htmlspecialchars($kategori) . "</td>";
-        echo "<td>" . htmlspecialchars($stok) . "</td>";
-        echo "<td>Rp " . number_format($harga, 0, ',', '.') . "</td>";
-        echo "</tr>";
-
-        echo "</table>";
-
-        echo "<br><a href='tambah_data.php'>Tambah Data Lagi</a>";
+        echo "Semua field wajib diisi!";
+        exit;
     }
 
-} else {
-    echo "<h3 style='color:red;'>Akses tidak diizinkan!</h3>";
+    // Query dengan tanda tanya (?)
+    $query = "INSERT INTO barang (nama_barang, kategori, stok, harga) VALUES (?, ?, ?, ?)";
+
+    $stmt = mysqli_prepare($conn, $query);
+
+    if (!$stmt) {
+        die("Prepare gagal: " . mysqli_error($conn));
+    }
+
+    // Bind parameter
+    // s = string, i = integer
+    mysqli_stmt_bind_param($stmt, "ssii", $nama_barang, $kategori, $stok, $harga);
+
+    // Eksekusi
+    if (mysqli_stmt_execute($stmt)) {
+        // Redirect ke index.php
+        header("Location: index.php");
+        exit;
+    } else {
+        echo "Gagal menyimpan data: " . mysqli_stmt_error($stmt);
+    }
+
+    mysqli_stmt_close($stmt);
 }
 ?>

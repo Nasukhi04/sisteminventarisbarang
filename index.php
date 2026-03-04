@@ -1,47 +1,26 @@
 <?php
 
+require 'koneksi.php';
+
 $keyword = "";
 
-// Cek apakah user sedang melakukan pencarian
-if (isset($_GET['keyword'])) {
-    $keyword = $_GET['keyword'];
+$query = "SELECT * FROM barang";
+$result = mysqli_query($conn, $query);
 
-    // Testing sementara (boleh dihapus nanti)
-    echo "Keyword yang dicari: " . htmlspecialchars($keyword) . "<br><br>";
+if (!$result) {
+    die("Query Error: " . mysqli_error($conn));
 }
-// Array multidimensi (5 data barang)
-$barang = [
-    [
-        "nama_barang" => "Laptop",
-        "kategori" => "Elektronik",
-        "stok" => 5,
-        "harga" => 7000000
-    ],
-    [
-        "nama_barang" => "Mouse",
-        "kategori" => "Elektronik",
-        "stok" => 15,
-        "harga" => 150000
-    ],
-    [
-        "nama_barang" => "Buku Tulis",
-        "kategori" => "ATK",
-        "stok" => 8,
-        "harga" => 5000
-    ],
-    [
-        "nama_barang" => "Pulpen",
-        "kategori" => "ATK",
-        "stok" => 25,
-        "harga" => 3000
-    ],
-    [
-        "nama_barang" => "Printer",
-        "kategori" => "Elektronik",
-        "stok" => 3,
-        "harga" => 2000000
-    ]
-];
+
+// Jika ada pencarian
+if (isset($_GET['q']) && $_GET['q'] != "") {
+    $keyword = mysqli_real_escape_string($conn, $_GET['q']);
+    $query = "SELECT * FROM barang 
+              WHERE nama_barang LIKE '%$keyword%' 
+              OR kategori LIKE '%$keyword%'";
+}
+
+$result = mysqli_query($conn, $query);
+
 ?>
 
 <!DOCTYPE html>
@@ -52,9 +31,10 @@ $barang = [
 <body>
 
 <h2>Daftar Inventaris Barang</h2>
+
 <form method="GET" action="">
-    <input type="text" name="keyword" placeholder="Ketik kata kunci..." 
-           value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+    <input type="text" name="q" placeholder="Ketik kata kunci..." 
+           value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>">
     <button type="submit">Cari</button>
     <a href="index.php">Reset Pencarian</a>
 </form>
@@ -69,37 +49,36 @@ $barang = [
         <th>Harga</th>
         <th>Status</th>
     </tr>
-    <?php
-$adaData = false;
-?>
-<?php foreach ($barang as $item) : ?>
 
-<?php
-    if ($keyword == "") {
-        $tampilkan = true;
-    } else {
-        $namaBarangLower = strtolower($item['nama_barang']);
-        $keywordLower    = strtolower($keyword);
+<?php if (mysqli_num_rows($result) > 0) : ?>
 
-        $tampilkan = str_contains($namaBarangLower, $keywordLower);
-    }
-?>
+    <?php while ($row = mysqli_fetch_assoc($result)) : ?>
+        <tr>
+            <td><?= htmlspecialchars($row['nama_barang']); ?></td>
+            <td><?= htmlspecialchars($row['kategori']); ?></td>
+            <td><?= htmlspecialchars($row['stok']); ?></td>
+            <td>Rp <?= number_format($row['harga'], 0, ',', '.'); ?></td>
+            <td>
+                <?php if ($row['stok'] > 10) : ?>
+                    <span style="color:green; font-weight:bold;">
+                        Stok Aman
+                    </span>
+                <?php elseif ($row['stok'] > 0) : ?>
+                    <span style="color:orange; font-weight:bold;">
+                        Stok Menipis, Silakan Restock
+                    </span>
+                <?php else : ?>
+                    <span style="color:red; font-weight:bold;">
+                        Stok Habis
+                    </span>
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php endwhile; ?>
 
-<?php if ($tampilkan) : ?>
-    <?php $adaData = true; ?>
+<?php else : ?>
     <tr>
-        <td><?= $item["nama_barang"]; ?></td>
-        <td><?= $item["kategori"]; ?></td>
-        <td><?= $item["stok"]; ?></td>
-        <td>Rp <?= number_format($item["harga"], 0, ',', '.'); ?></td>
-    </tr>
-<?php endif; ?>
-
-<?php endforeach; ?>
-
-<?php if ($keyword != "" && !$adaData) : ?>
-    <tr>
-        <td colspan="4" style="text-align:center; color:red;">
+        <td colspan="5" style="text-align:center; color:red;">
             Data tidak ditemukan.
         </td>
     </tr>
