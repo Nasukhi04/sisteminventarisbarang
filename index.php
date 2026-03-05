@@ -48,6 +48,7 @@ $result = mysqli_query($conn, $query);
         <th>Stok</th>
         <th>Harga</th>
         <th>Status</th>
+        <th>Aksi</th>
     </tr>
 
 <?php if (mysqli_num_rows($result) > 0) : ?>
@@ -72,6 +73,11 @@ $result = mysqli_query($conn, $query);
                         Stok Habis
                     </span>
                 <?php endif; ?>
+            </td>
+              <td>
+             <a href="edit.php?id=<?= $row['id']; ?>">Edit</a> |
+                <a href="hapus.php?id=<?= $row['id']; ?>" 
+                onclick="return confirm('Yakin ingin menghapus data ini?')">Hapus</a>
             </td>
         </tr>
     <?php endwhile; ?>
