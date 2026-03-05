@@ -20,7 +20,12 @@ if (isset($_GET['q']) && $_GET['q'] != "") {
 }
 
 $result = mysqli_query($conn, $query);
+session_start();
 
+if (!isset($_SESSION['is_logged_in'])) {
+    header("Location: login.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +34,10 @@ $result = mysqli_query($conn, $query);
     <title>Sistem Inventaris Barang</title>
 </head>
 <body>
+<p>
+    Selamat datang, <strong><?= $_SESSION['username']; ?></strong> |
+    <a href="logout.php">Logout</a>
+</p>
 
 <h2>Daftar Inventaris Barang</h2>
 
@@ -40,6 +49,7 @@ $result = mysqli_query($conn, $query);
 </form>
 
 <br>
+
 
 <table border="1" cellpadding="10">
     <tr>

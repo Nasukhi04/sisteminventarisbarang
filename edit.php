@@ -28,6 +28,12 @@ if (isset($_GET['id'])) {
 } else {
     die("ID tidak ditemukan.");
 }
+session_start();
+
+if (!isset($_SESSION['is_logged_in'])) {
+    header("Location: login.php");
+    exit;
+}
 ?>
 
 <h2>Edit Data Barang</h2>
